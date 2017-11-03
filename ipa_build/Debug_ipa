@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#--------------------------------------------
+# 功能：为使用了CocoaPods的工程打ipa包
+# 使用说明：	cocoapods-build <工程根路径> [<Debug/Release 默认Release>]
+# 1,直接拖放此文件到命令行 2,拖放工程文件根目录到命令行 3,Debug/Release
+#--------------------------------------------
+# 计时
+SECONDS=0
+# 获取工程根目录
+fadir()  
+{  
+    local this_dir=`pwd`  
+    local child_dir="$1" 
+    dirname "$child_dir" 
+    cd $this_dir  
+} 
+CUR_DIR=$(cd `dirname $0` && pwd -P )
+PROJ_BIN=`fadir $CUR_DIR`
+echo "当前文件路径 $CUR_DIR"
+echo "当前文件路径上一级 $PROJ_BIN"
+#获取shell文件所在的绝对路径
+current_path=$(pwd)
+tmp_path=$(dirname $0)
+cd $tmp_path
+shell_path=$(pwd)
+cd $current_path
+
+#工程绝对路径
+cd $PROJ_BIN
+project_path=$(pwd)
+#获取工程默认scheme的名字（默认与工程文件名字相同）
+scheme_name=$(echo $(basename ./*.xcodeproj) | awk -F. '{print $1}')
+
+build_cmd=${shell_path}'/ipa-build '${project_path}' -n -w -s '${scheme_name}
+
+build_cmd=${build_cmd}' -c 'Debug
+
+#编译工程
+${build_cmd} 
+
+
+

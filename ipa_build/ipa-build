@@ -1,0 +1,159 @@
+#!/bin/bash
+
+# 功能：编译xcode项目并打ipa包
+# 使用说明：
+# 编译workspace
+#			ipa-build  <workspace directory> -w -s <schemeName> [-c <project configuration>] [-n]
+#
+# 参数说明：	-c NAME				工程的configuration,默认为Release。  
+#			-w					编译workspace	
+#			-s NAME				对应workspace下需要编译的scheme
+#			-n					编译前是否先clean工程
+# 计时
+SECONDS=0
+
+if [ $# -lt 1 ];then
+	echo "你需要把这个文件夹放到工程根目录下边"
+	exit 2
+fi
+
+if [ ! -d $1 ];then
+	echo "第一个参数必须是一个工程的路径"
+	exit 2
+fi
+
+#工程绝对路径
+cd $1
+project_path=$(pwd)
+
+#编译的configuration，默认为Release
+build_config=Release
+
+param_pattern=":nc:ws:"
+OPTIND=2
+while getopts $param_pattern optname
+  do
+    case "$optname" in       
+	  "n")        
+		should_clean=y		
+        ;;
+      "c")        
+		tmp_optind=$OPTIND
+		tmp_optname=$optname
+		tmp_optarg=$OPTARG
+		OPTIND=$OPTIND-1
+		if getopts $param_pattern optname ;then
+			echo  "Error argument value for option $tmp_optname"
+			exit 2
+		fi
+		OPTIND=$tmp_optind
+
+		build_config=$tmp_optarg
+		
+        ;;
+	  "w")
+		workspace_name='*.xcworkspace'
+		ls $project_path/$workspace_name &>/dev/null
+		rtnValue=$?
+		if [ $rtnValue = 0 ];then
+			build_workspace=$(echo $(basename $project_path/$workspace_name))
+		else
+			echo  "Error!Current path is not a xcode workspace.Please check, or do not use -w option."
+			exit 2
+		fi
+		
+        ;;
+	  "s")
+		tmp_optind=$OPTIND
+		tmp_optname=$optname
+		tmp_optarg=$OPTARG
+
+		OPTIND=$OPTIND-1
+		if getopts $param_pattern optname ;then
+			echo  "Error argument value for option $tmp_optname"
+			exit 2
+		fi
+		OPTIND=$tmp_optind
+
+		build_scheme=$tmp_optarg
+		
+        ;;
+      "?")
+        echo "Error! Unknown option $OPTARG"
+		exit 2
+        ;;
+      ":")
+        echo "Error! No argument value for option $OPTARG"
+		exit 2
+        ;;
+      *)
+      # Should not occur
+        echo "Error! Unknown error while processing options"
+		exit 2
+        ;;
+    esac
+  done
+# 输出到桌面
+output_path=~/Desktop
+# 获取时间 如:201706011145
+current_date="$(date +%Y%m%d_%H%M%S)"
+# 指定输出ipa路径
+export_path="${output_path}/${build_scheme}"
+# 指定输出归档文件地址
+export_archive_path="${export_path}/${build_scheme}.xcarchive"
+# 打包默认输出ipa地址
+export_ipa_path="${export_path}"
+# plist文件地址
+ExportOptionsPlistPath="./ExportOptions.plist"
+# 指定输出ipa地址
+output_ipa_path="${output_path}/${build_scheme}_${current_date}.ipa"
+#是否clean
+if [ "$should_clean" = "y" ];then
+	echo "清理工程~~~~~~~~~~~~~~~~"
+	xcodebuild clean -configuration ${build_config} -workspace ${build_workspace} -scheme ${build_scheme} 
+fi
+
+#组合编译命令
+build_cmd='xcodebuild'
+
+if [ "$build_workspace" != "" ];then
+	#编译workspace
+	if [ "$build_scheme" = "" ];then
+		echo "Error! Must provide a scheme by -s option together when using -w option to compile a workspace."
+		exit 2
+	fi
+	
+	build_cmd=${build_cmd}' archive -workspace '${build_workspace}' -scheme '${build_scheme}' -configuration '${build_config}' -archivePath '${export_archive_path}' '
+
+else
+	echo "not workspace."
+	
+fi
+
+
+#编译工程
+cd $project_path
+$build_cmd || exit
+
+
+#打包
+xcodebuild  -exportArchive  -archivePath ${export_archive_path}  -exportPath ${export_ipa_path}  -exportOptionsPlist ${ExportOptionsPlistPath} -allowProvisioningUpdates
+
+echo "🎉  🎉  🎉  🎉  🎉  🎉  ${build_scheme} 打包成功! 🎉  🎉  🎉  🎉  🎉  🎉  "
+
+mv ${export_ipa_path}/Apps/${build_scheme}.ipa ${output_ipa_path}
+
+echo "打包总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+
+
+#进入输出路径 
+if [ "$export_path" != "" ];then
+	rm -rf $export_path
+fi
+
+echo "删除所有编译文件"
+
+
+echo "共计总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+exit
+
