@@ -37,7 +37,7 @@ security unlock-keychain -p 1234 ~/Library/Keychains/login.keychain
 fastlane gym --export_method ad-hoc --output_name APPscheme名字 --scheme APPscheme名字 --clean --configuration Debug --output_directory ./ --export_options ./ExportOptions.plist  --export_xcargs -allowProvisioningUpdates
 
 ```
- 
+# 企业微信发送消息
 * 以下为打包上传完成后调用企业微信开放平台接口获取当前企业微信的token，并且发送消息
 
 * 获取当前企业微信的token，需要安装JQ脚本用于解析json
@@ -82,3 +82,4 @@ curl -H "Content-Type: application/json" -X POST -d '{"touser" : "","toparty" : 
 # curl -H "Content-Type: application/json" -X POST -d '{"touser" : "","toparty" : "你企业微信分组id","totag" : "","msgtype" : "text","agentid" : 1000003,"text" : {"content" : "Debug测试包'$MARKETING_VERSION'版本已于'$current_data'打包成功,下载地址<a href=\"https://www.pgyer.com/xxx\">点击跳转蒲公英下载</a>。"},"safe":0}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$token
 
 ```
+同样的钉钉平台也可以根据开放平台接口通过token进行发送消息
