@@ -32,7 +32,9 @@ fi
 # Jenkins打包
 * fastlane 打包到处IPA
 ```
-fastlane gym --export_method ad-hoc --output_name ${scheme_name} --scheme ${scheme_name} --clean --configuration Debug --output_directory ${export_path} --export_options ${exportOptions_path} --export_xcargs -allowProvisioningUpdates
+security unlock-keychain -p 1234 ~/Library/Keychains/login.keychain 
+
+fastlane gym --export_method ad-hoc --output_name APPscheme名字 --scheme APPscheme名字 --clean --configuration Debug --output_directory ./ --export_options ./ExportOptions.plist  --export_xcargs -allowProvisioningUpdates
 
 ```
  
