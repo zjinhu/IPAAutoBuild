@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#--------------------------------------------
-# 功能：为使用了CocoaPods的工程打ipa包
-# 使用说明：	cocoapods-build <工程根路径> [<Debug/Release 默认Release>]
-# 1,直接拖放此文件到命令行 2,拖放工程文件根目录到命令行 3,Debug/Release
-#--------------------------------------------
 # 计时
 SECONDS=0
 # 获取工程根目录
@@ -19,25 +14,119 @@ CUR_DIR=$(cd `dirname $0` && pwd -P )
 PROJ_BIN=`fadir $CUR_DIR`
 echo "当前文件路径 $CUR_DIR"
 echo "当前文件路径上一级 $PROJ_BIN"
-#获取shell文件所在的绝对路径
-current_path=$(pwd)
-tmp_path=$(dirname $0)
-cd $tmp_path
-shell_path=$(pwd)
-cd $current_path
 
+
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  开始打包Debug! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+"
 #工程绝对路径
 cd $PROJ_BIN
 project_path=$(pwd)
+echo "工程路径 $project_path"
+# 输出到桌面
+output_path=~/Desktop
 #获取工程默认scheme的名字（默认与工程文件名字相同）
 scheme_name=$(echo $(basename ./*.xcodeproj) | awk -F. '{print $1}')
+# 获取时间 如:201706011145
+current_date="$(date +%Y%m%d_%H%M%S)"
+# 指定输出ipa路径
+export_path="${output_path}/${scheme_name}_${current_date}"
+export_path_ipa="${export_path}/${scheme_name}.ipa" 
 
-build_cmd=${shell_path}'/ipa-build '${project_path}' -n -w -s '${scheme_name}
+exportOptions_path="$project_path/ExportOptions.plist"
 
-build_cmd=${build_cmd}' -c 'Debug
+echo "Options路径 $exportOptions_path"
 
-#编译工程
-${build_cmd} 
+echo "输出路径 $export_path_ipa"
+
+fastlane gym --export_method ad-hoc --output_name ${scheme_name} --scheme ${scheme_name} --clean --configuration Debug --output_directory ${export_path} --export_options ${exportOptions_path} --export_xcargs -allowProvisioningUpdates
+
+echo "打包总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  ${scheme_name} Debug 打包完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+"
+# if [ "$export_path_ipa" != "" ];then
 
 
 
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  开始上传蒲公英! 🎉  🎉  🎉  🎉  🎉  🎉
+
+# "
+# curl -F "file=@$export_path_ipa" -F "uKey=你自己的key" -F "_api_key=你自己的key" https://qiniu-storage.pgyer.com/apiv1/app/upload
+
+
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  蒲公英上传完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+"
+
+
+ 
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  开始上传Fir! 🎉  🎉  🎉  🎉  🎉  🎉
+
+# "
+
+# fir login "你自己的key"
+# fir me
+# fir publish $export_path_ipa
+ 
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  Fir上传完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+# "
+
+
+# echo "共计总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  企业微信准备发送消息! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+# "
+# curl -o token.txt -s https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=你企业微信Key\&corpsecret=你企业微信Key
+
+# token=$(cat token.txt |jq -r '.access_token')
+# echo "这里是一个文件的内容 $token"
+
+# App_Name=`find . -name *.xcodeproj | awk -F "[/.]" '{print $(NF-1)}'`
+
+# echo "输出App_Name $App_Name"
+# Workspace_Path="${project_path}/${App_Name}.xcworkspace"
+# Xcodeproj_Path="${project_path}/${App_Name}.xcodeproj"
+# # project.pbxproj文件路径
+# Pbxproj_Path="${Xcodeproj_Path}/project.pbxproj"
+# echo "输出Pbxproj_Path $Pbxproj_Path"
+
+# current_data="$(date +%Y-%m-%d_%H:%M:%S)"
+
+# # Pbxproj_Path指向 project.pbxproj 文件路径
+# configuration=$(grep -i "MARKETING_VERSION =" ${Pbxproj_Path})
+
+# Array=($(echo $configuration))
+# # project.pbxproj 中存在多行PRODUCT_BUNDLE_IDENTIFIER信息，从后往前读取
+# MARKETING_VERSION=${Array[5]}
+# if [ ! -n $MARKETING_VERSION ]
+# then
+#     MARKETING_VERSION=${Array[3]}
+# fi
+
+# curl -H "Content-Type: application/json" -X POST -d '{"touser" : "","toparty" : "你企业微信分组id","totag" : "","msgtype" : "text","agentid" : 1000003,"text" : {"content" : "Debug测试包'$MARKETING_VERSION'版本已于'$current_data'打包成功,下载地址<a href=\"https://www.pgyer.com/xxx\">点击跳转蒲公英下载</a>。"},"safe":0}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$token
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  发送消息完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+# "
+# fi
+
+exit
+ 

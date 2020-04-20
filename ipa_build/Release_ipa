@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#--------------------------------------------
-# 功能：为使用了CocoaPods的工程打ipa包
-# 直接拖放此文件和ipa_build到工程根目录,点击此文件即可
-#--------------------------------------------
-
 # 获取工程根目录
 fadir()  
 {  
@@ -17,29 +12,77 @@ CUR_DIR=$(cd `dirname $0` && pwd -P )
 PROJ_BIN=`fadir $CUR_DIR`
 echo "当前文件路径 $CUR_DIR"
 echo "当前文件路径上一级 $PROJ_BIN"
-#获取shell文件所在的绝对路径
-current_path=$(pwd)
-tmp_path=$(dirname $0)
-cd $tmp_path
-shell_path=$(pwd)
-cd $current_path
 
+echo "
 
+🎉  🎉  🎉  🎉  🎉  🎉  开始打包Release! 🎉  🎉  🎉  🎉  🎉  🎉  
+
+"
 #工程绝对路径
 cd $PROJ_BIN
 project_path=$(pwd)
+echo "工程路径 $project_path"
+# 输出到桌面
+output_path=~/Desktop
 #获取工程默认scheme的名字（默认与工程文件名字相同）
 scheme_name=$(echo $(basename ./*.xcodeproj) | awk -F. '{print $1}')
+# 获取时间 如:201706011145
+current_date="$(date +%Y%m%d_%H%M%S)"
+# 指定输出ipa路径
+export_path="${output_path}/${scheme_name}_${current_date}"
+export_path_ipa="${export_path}/${scheme_name}.ipa" 
+
+exportOptions_path="$project_path/ExportOptions.plist"
+
+echo "输出路径 $export_path_ipa"
+
+fastlane gym --export_method development --output_name ${scheme_name} --scheme ${scheme_name} --clean --configuration Release --output_directory ${export_path} --export_options ${exportOptions_path} --export_xcargs -allowProvisioningUpdates
+
+echo "打包总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  ${scheme_name} Release 打包完成! 🎉  🎉  🎉  🎉  🎉  🎉  
+
+"
+
+# if [ "$export_path_ipa" != "" ];then
 
 
-build_cmd=${shell_path}'/ipa-build '${project_path}' -w -s '${scheme_name}
+
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  开始上传蒲公英! 🎉  🎉  🎉  🎉  🎉  🎉
+
+# "
+# curl -F "file=@$export_path_ipa" -F "uKey=你自己的key" -F "_api_key=你自己的key" https://qiniu-storage.pgyer.com/apiv1/app/upload
 
 
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  蒲公英上传完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+# "
 
 
-build_cmd=${build_cmd}' -c 'Release
+ 
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  开始上传Fir! 🎉  🎉  🎉  🎉  🎉  🎉
+
+# "
+
+# fir login "你自己的key"
+# fir me
+# fir publish $export_path_ipa
+ 
+# echo "
+
+# 🎉  🎉  🎉  🎉  🎉  🎉  Fir上传完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+# "
 
 
+# echo "共计总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+# fi
 
-#编译工程
-${build_cmd} 
+exit
