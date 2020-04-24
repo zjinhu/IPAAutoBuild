@@ -6,8 +6,9 @@ sudo gem install fastlane
 * 1.把ipa_build文件夹拖放到你的工程根目录下边（文件夹与xcworkspace文件同级）
 *  2.工程配置Automatically manage signing 自动签名
 *  3.xcode8以后打包需要ExportOptions.plist文件，也放在工程根目录(可以直接用archive导出来的那个ExportOptions.plist)具体请见参开文件
-*  4.然后双击Debug_ipa即可导出到桌面一个ipa的Debug包，同理Release_ipa是Release包，免除手动打包archive每次都需要去选择debug或者release
-*  5.可以根据自己的需要添加命令行发布到fir或者其他分发平台例子如下，右键打开方式选文本编辑取消相应的代码注释就可以
+*  4.然后双击Debug_ipa即可导出到桌面一个ipa的Debug包，同理Release_ipa是Release包
+*  5.双击APP_Store会进行打包上传App Store，过程中会提示输入APPID密码，需要搭配另外一个APPStore.plist(可以直接用archive导出来的那个ExportOptions.plist，改一下名称)具体请见参开文件
+*  6.可以根据自己的需要添加命令行发布到fir或者其他分发平台例子如下，右键打开方式选文本编辑取消相应的代码注释就可以
 ```objc
 //判断文件是否存在
 if [ "$output_ipa_path" != "" ];then

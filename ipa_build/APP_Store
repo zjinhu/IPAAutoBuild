@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# 获取工程根目录
+fadir()  
+{  
+    local this_dir=`pwd`  
+    local child_dir="$1" 
+    dirname "$child_dir" 
+    cd $this_dir  
+} 
+CUR_DIR=$(cd `dirname $0` && pwd -P )
+PROJ_BIN=`fadir $CUR_DIR`
+echo "当前文件路径 $CUR_DIR"
+echo "当前文件路径上一级 $PROJ_BIN"
+
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  开始打包Release! 🎉  🎉  🎉  🎉  🎉  🎉  
+
+"
+#工程绝对路径
+cd $PROJ_BIN
+project_path=$(pwd)
+echo "工程路径 $project_path"
+# 输出到桌面
+output_path=~/Desktop
+#获取工程默认scheme的名字（默认与工程文件名字相同）
+scheme_name=$(echo $(basename ./*.xcodeproj) | awk -F. '{print $1}')
+# 获取时间 如:201706011145
+current_date="$(date +%Y%m%d_%H%M%S)"
+# 指定输出ipa路径
+export_path="${output_path}/${scheme_name}_${current_date}"
+export_path_ipa="${export_path}/${scheme_name}.ipa" 
+
+exportOptions_path="$project_path/APPStore.plist"
+
+echo "输出路径 $export_path_ipa"
+
+fastlane gym --export_method app-store --output_name ${scheme_name} --scheme ${scheme_name} --clean --configuration Release --output_directory ${export_path} --export_options ${exportOptions_path} --export_xcargs -allowProvisioningUpdates
+
+echo "打包总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  ${scheme_name}  打包完成! 🎉  🎉  🎉  🎉  🎉  🎉  
+
+"
+
+if [ "$export_path_ipa" != "" ];then
+
+
+
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  开始上传AppStore! 🎉  🎉  🎉  🎉  🎉  🎉
+
+"
+fastlane deliver --ipa $export_path_ipa --skip_screenshots --skip_metadata --force
+
+echo "
+
+🎉  🎉  🎉  🎉  🎉  🎉  AppStore上传完成! 🎉  🎉  🎉  🎉  🎉  🎉 
+
+"
+ 
+echo "共计总用时: ${SECONDS}s ~~~~~~~~~~~~~~~~"
+fi
+
+exit
