@@ -38,7 +38,45 @@ security unlock-keychain -p 1234 ~/Library/Keychains/login.keychain
 fastlane gym --export_method ad-hoc --output_name APPscheme名字 --scheme APPscheme名字 --clean --configuration Debug --output_directory ./ --export_options ./ExportOptions.plist  --export_xcargs -allowProvisioningUpdates
 
 ```
+
+
+# fastlane_pod
+* 用于cocoapods发包，追踪当前目录下的podspec文件，然后调用fastlane文件夹下的fastlane文件进行传参打包，完全可视化操作，双击即可执行命令。
+参考用例：
+```
+lane :SwiftMediator do |options|
+
+  target_version = options[:tag]
+ 
+  target_project = "SwiftMediator"
+  spec_path = "#{target_project}.podspec"
+  # git pull
+  git_pull 
+  # 确认是 master 分支
+  ensure_git_branch
+  # 修改 spec 为即将发布的版本
+  version_bump_podspec(path: spec_path, version_number: target_version)
+  # 提交代码到远程仓库
+  git_add(path: '.')
+  git_commit(path: '.', message: 'release')
+  push_to_git_remote
+  # 检查对于 tag 是否已经存在
+  if git_tag_exists(tag: target_version)
+      # 删除对应 tag
+      remove_git_tag(tag: target_version)
+  end
+  # 添加 tag
+  add_git_tag(tag: target_version)
+  # 提交 tag
+  push_git_tags
+  # 验证 spec 文件
+  pod_lib_lint(verbose: true,allow_warnings: true,use_libraries: true)
+  # pod trunk push 'spec_path'
+  pod_push(path: spec_path, allow_warnings: true ,verbose: true,use_libraries: true)
+end
+```
 # 企业微信发送消息
+
 * 以下为打包上传完成后调用企业微信开放平台接口获取当前企业微信的token，并且发送消息
 
 * 获取当前企业微信的token，需要安装JQ脚本用于解析json
