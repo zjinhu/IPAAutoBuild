@@ -44,11 +44,12 @@ fastlane gym --export_method ad-hoc --output_name APPscheme名字 --scheme APPsc
 * 用于cocoapods发包，追踪当前目录下的podspec文件，然后调用fastlane文件夹下的fastlane文件进行传参打包，完全可视化操作，双击即可执行命令。
 参考用例：
 ```
-lane :SwiftMediator do |options|
+lane :release_pod do |options|
 
-  target_version = options[:tag]
+  target_version = options[:t]
  
-  target_project = "SwiftMediator"
+  target_project = options[:p]
+
   spec_path = "#{target_project}.podspec"
   # git pull
   git_pull 
@@ -70,9 +71,9 @@ lane :SwiftMediator do |options|
   # 提交 tag
   push_git_tags
   # 验证 spec 文件
-  pod_lib_lint(verbose: true,allow_warnings: true,use_libraries: true)
+  pod_lib_lint(verbose: true,allow_warnings: true)
   # pod trunk push 'spec_path'
-  pod_push(path: spec_path, allow_warnings: true ,verbose: true,use_libraries: true)
+  pod_push(path: spec_path, allow_warnings: true,verbose: true)
 end
 ```
 # 企业微信发送消息
