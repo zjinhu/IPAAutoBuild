@@ -1,17 +1,32 @@
-# IPAAutoBuild 依赖Fastlane进行打包
-### IPA打包发布
+# IPAAutoBuild 
+
+
+
+依赖Fastlane进行打包
+
 请先安装fastlane
+
 ```
 sudo gem install fastlane
 ```
 
+# IPA打包发布
+
 **使用方法**
+
 1. 把**ipa_build**文件夹拖放到你的工程根目录下边（文件夹与xcworkspace文件同级）
+
 2. 工程配置Automatically manage signing 自动签名
+
 3. xcode8以后打包需要**ExportOptions.plist**文件，也放在工程根目录(可以直接用archive导出来的那个ExportOptions.plist)具体请参考ExportOptions.plist文件
+
 4. 双击**Debug_ipa**文件即可导出到桌面一个ipa的Debug包，同理**Release_ipa**是Release包
+
 5. 双击**APP_Store**会进行打包上传App Store，过程中会提示输入APPID密码，需要搭配另外一个**APPStore.plist**(可以直接用archive导出来的那个ExportOptions.plist，改一下名称)具体请见参开文件
+
 6. 可以根据自己的需要添加命令行发布到fir或者其他分发平台例子如下，右键打开方式选文本编辑取消相应的代码注释就可以
+
+   
 
 上传到蒲公英
 ```objc
@@ -39,7 +54,10 @@ echo "🎉  🎉  🎉  🎉  🎉  🎉  Fir上传完成! 🎉  🎉  🎉  �
 fi
 ```
 
-# Jenkins打包
+
+
+Jenkins打包也可以使用这个脚本的命令
+
 直接添加运行脚本复制粘贴命令即可
 ```
 security unlock-keychain -p 1234 ~/Library/Keychains/login.keychain 
@@ -49,19 +67,27 @@ fastlane gym --export_method ad-hoc --output_name APPscheme名字 --scheme APPsc
 ```
 
 #  Cocoapods打包发布
-### fastlane_pod
+### 
 **fastlane_pod** 用于cocoapods打包发布，包括私有、公有。完全可视化操作，双击即可执行命令
 1. fastlane_pod 追踪当前目录下的podspec文件并提示进行选择
 2. 提示输入即将发布的版本号
 3. 查找当前电脑的Repos仓库目录进行选择（发私有仓库还是cocoapods仓库）
 4. 调用fastlane文件夹下的fastlane文件进行传参打包
 
+**使用方法**
+
+把**Cocoapods打包发布**文件夹内文件拖放到你的工程目录下边（与podspec文件同级）
+
 参考用例：
 ![](shell.png)
 
-请使用fastlane文件夹下的fastlane文件
 
-# 企业微信发送消息
+
+
+
+以下只是记录一下用法。
+
+企业微信发送消息
 
 * 以下为打包上传完成后调用企业微信开放平台接口获取当前企业微信的token，并且发送消息
 
